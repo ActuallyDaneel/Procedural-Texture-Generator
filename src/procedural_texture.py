@@ -7,7 +7,7 @@ class Canvas:
     def __init__(self, open_image: str=None, size: tuple=(64, 64), color: tuple=(255, 255, 255)):
         # open_image is used to open a present image, size and tuple are used to generate one
         if open_image != None:
-            self.canvas = Image.open("image.jpg")
+            self.canvas = Image.open(open_image)
             self.canvas = self.canvas.convert("RGBA")
         else:
             self.canvas = Image.new(mode="RGBA", size=size, color=color)
@@ -75,7 +75,7 @@ class Canvas:
                 pixel = list(self.canvas.getpixel((x, y)))
                 dist_from_start = self.distance_from(start, (x, y))
                 mult = self.to_max_multiple(dist_from_start, max_dist)
-                for i in range(4):
+                for i in range(3):
                     max_add = int((255-pixel[i])*mult)
                     max_sub = int((-pixel[i])*mult)
                     change = random.choice([max_sub, max_add])
@@ -87,7 +87,7 @@ class Canvas:
         for y in range(self.size[1]):
             for x in range(self.size[0]):
                 pixel = list(self.canvas.getpixel((x, y)))
-                for i in range(3):
+                for i in range(2):
                     if 0 <= pixel[i] + level <= 255:
                         pixel[i] += level
                     elif pixel[i] + level < 0:
@@ -96,14 +96,14 @@ class Canvas:
                         pixel[i] += 255 - pixel[i]
                 self.canvas.putpixel((x, y), tuple(pixel))
 
-    def saturate(self, level: int=1) -> None:
-        """Saturates the image by a given amount."""
+    def saturate_mono(self, level: int=1) -> None:
+        """Saturates the image by a given amount. (single color saturation)."""
         for y in range(self.size[1]):
             for x in range(self.size[0]):
                 pixel = list(self.canvas.getpixel((x, y)))
-                sorted_pixel = pixel.copy()[:3]
+                sorted_pixel = pixel.copy()[:2]
                 sorted_pixel.sort(reverse=True)
-                for i in range(3):
+                for i in range(2):
                     if pixel[i] == sorted_pixel[0]:
                         if 0 <= pixel[i] + level <= 255:
                             pixel[i] += level
@@ -113,6 +113,31 @@ class Canvas:
                             pixel[i] += 255 - pixel[i]
                 self.canvas.putpixel((x, y), tuple(pixel))
 
-texture = Canvas(open_image="image.jpg")
-texture.saturate(-100)
-texture.save("desaturation.png")
+    def saturate_proper(self, level: int=1) -> None:
+        """Saturates the image by a given amount (all pixel values changed proportionally)."""
+        for y in range(self.size[1]):
+            for x in range(self.size[0]):
+                pixel = list(self.canvas.getpixel((x, y)))
+                copied_pixel = pixel.copy()
+                sorted_pixel = pixel.copy()[:2]
+                pixel_to_change = {}
+                sorted_pixel.sort(reverse=True)
+                for val in sorted_pixel:
+                    if sorted_pixel[0] == 0:
+                        change = level
+                    else:
+                        change = round(level * (val / sorted_pixel[0]))
+                    if 0 <= val + change <= 255:
+                        pixel_to_change.update({val: val + change})
+                    elif val + change < 0:
+                        pixel_to_change.update({val: 0})
+                    else:
+                        pixel_to_change.update({val: 255})
+                for i in range(2):
+                    pixel[i] = pixel_to_change[pixel[i]]
+                self.canvas.putpixel((x, y), tuple(pixel))
+
+
+texture = Canvas(open_image="cell.jpg")
+texture.saturate_mono(100)
+texture.save("cellsatmono.png")
