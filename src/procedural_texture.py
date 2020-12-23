@@ -101,9 +101,9 @@ class Canvas:
         for y in range(self.size[1]):
             for x in range(self.size[0]):
                 pixel = list(self.canvas.getpixel((x, y)))
-                sorted_pixel = pixel.copy()[:2]
+                sorted_pixel = pixel.copy()[:3]
                 sorted_pixel.sort(reverse=True)
-                for i in range(2):
+                for i in range(3):
                     if pixel[i] == sorted_pixel[0]:
                         if 0 <= pixel[i] + level <= 255:
                             pixel[i] += level
@@ -119,7 +119,7 @@ class Canvas:
             for x in range(self.size[0]):
                 pixel = list(self.canvas.getpixel((x, y)))
                 copied_pixel = pixel.copy()
-                sorted_pixel = pixel.copy()[:2]
+                sorted_pixel = pixel.copy()[:3]
                 pixel_to_change = {}
                 sorted_pixel.sort(reverse=True)
                 for val in sorted_pixel:
@@ -133,7 +133,7 @@ class Canvas:
                         pixel_to_change.update({val: 0})
                     else:
                         pixel_to_change.update({val: 255})
-                for i in range(2):
+                for i in range(3):
                     pixel[i] = pixel_to_change[pixel[i]]
                 self.canvas.putpixel((x, y), tuple(pixel))
 
