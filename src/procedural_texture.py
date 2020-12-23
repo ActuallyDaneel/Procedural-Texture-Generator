@@ -55,7 +55,7 @@ class Canvas:
         """Determines a multiple for image manipulation based on distance between two points."""
         return(round(distance/max_distance, 5))
 
-    def randomize_pixels_abs(self) -> None:
+    def randomize_pixels(self) -> None:
         """Randomizes the color and alpha of each pixel."""
         for y in range(self.size[1]):
             for x in range(self.size[0]):
@@ -67,7 +67,7 @@ class Canvas:
                     pixel[i] += change
                 self.canvas.putpixel((x, y), tuple(pixel))
 
-    def randomize_pixels(self, start: tuple=(0, 0)) -> None:
+    def randomize_pixels_around_point(self, start: tuple=(0, 0)) -> None:
         """Randomizes the color and alpha of each pixel based on distance between each pixel and a given pixel."""
         max_dist = self.max_distance(start)
         for y in range(self.size[1]):
@@ -82,6 +82,37 @@ class Canvas:
                     pixel[i] += change
                 self.canvas.putpixel((x, y), tuple(pixel))
 
+    def brighten(self, level: int=1) -> None:
+        """Brightens the image by a given amount."""
+        for y in range(self.size[1]):
+            for x in range(self.size[0]):
+                pixel = list(self.canvas.getpixel((x, y)))
+                for i in range(3):
+                    if 0 <= pixel[i] + level <= 255:
+                        pixel[i] += level
+                    elif pixel[i] + level < 0:
+                        pixel[i] += pixel[i] - 255
+                    else:
+                        pixel[i] += 255 - pixel[i]
+                self.canvas.putpixel((x, y), tuple(pixel))
+
+    def saturate(self, level: int=1) -> None:
+        """Saturates the image by a given amount."""
+        for y in range(self.size[1]):
+            for x in range(self.size[0]):
+                pixel = list(self.canvas.getpixel((x, y)))
+                sorted_pixel = pixel.copy()[:3]
+                sorted_pixel.sort(reverse=True)
+                for i in range(3):
+                    if pixel[i] == sorted_pixel[0]:
+                        if 0 <= pixel[i] + level <= 255:
+                            pixel[i] += level
+                        elif pixel[i] + level < 0:
+                            pixel[i] += pixel[i] - 255
+                        else:
+                            pixel[i] += 255 - pixel[i]
+                self.canvas.putpixel((x, y), tuple(pixel))
+
 texture = Canvas(open_image="image.jpg")
-texture.randomize_pixels()
-texture.save("static_overlay_around_point.png")
+texture.saturate(-100)
+texture.save("desaturation.png")
